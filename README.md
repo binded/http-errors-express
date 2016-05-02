@@ -50,7 +50,9 @@ npm install --save http-errors-express
 
 Returns an Express middleware. `logFn` is an optional parameter which
 will be called on unexpected errors (those that don't have the `expose`
-property set to `true`, e.g. >500 errors), defaults to `console.error`
+property set to `true`, e.g. >500 errors), defaults to `console.error`.
+If an error has a `detail` property set and is exposed, it will be
+included as part of the JSON response.
 
 ```javascript
 import express from 'express'
