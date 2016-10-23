@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const defaultLogError = console.error.bind(console)
+const defaultLogError = err => console.error(err)
 export default (logError = defaultLogError) => {
   if (logError && typeof logError !== 'function') {
     throw new Error('logError must be a function')
@@ -29,7 +29,7 @@ export default (logError = defaultLogError) => {
     } else {
       // Unexpected errors
       if (logError) {
-        logError(err)
+        logError(err, req)
       }
       res.json({
         error: {
