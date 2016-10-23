@@ -1,6 +1,6 @@
 {
   "name": "http-errors-express",
-  "version": "1.4.1",
+  "version": "2.0.0",
   "description": "Express middleware for handling errors created with the http-errors package.",
   "main": "lib/index.js",
   "scripts": {
