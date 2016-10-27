@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 const defaultLogError = err => console.error(err)
+const noop = () => {}
+
 export default (logError = defaultLogError) => {
   if (logError && typeof logError !== 'function') {
     throw new Error('logError must be a function')
@@ -7,6 +9,10 @@ export default (logError = defaultLogError) => {
 
   /* eslint-disable no-unused-vars */
   return (err, req, res, next) => {
+    const maybeJson = res.headersSent
+      ? noop
+      : json => res.json(json)
+
     if (!res.headersSent) {
       if (err.status) {
         res.status(err.status)
@@ -19,7 +25,7 @@ export default (logError = defaultLogError) => {
 
     if (err.expose) {
       // Expected errors...
-      res.json({
+      maybeJson({
         error: {
           name: err.name,
           message: err.message,
@@ -31,7 +37,7 @@ export default (logError = defaultLogError) => {
       if (logError) {
         logError(err, req)
       }
-      res.json({
+      maybeJson({
         error: {
           name: err.name,
         },

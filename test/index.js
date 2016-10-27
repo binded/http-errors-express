@@ -22,9 +22,15 @@ app.get('/402-with-detail', (req, res, next) => {
 app.get('/500-with-expose', (req, res, next) => {
   next(createError(500, 'exposed internal error', { expose: true }))
 })
+app.get('/after-headers-sent', (req, res, next) => {
+  res.json({ test: true })
+  next(new Error('after headers'))
+})
 
-const logs = []
-const log = (err) => logs.push(err)
+const state = {
+  logs: [],
+}
+const log = (err) => state.logs.push(err)
 app.use(httpErrors(log))
 
 /*
@@ -33,7 +39,7 @@ const httpServer = app.listen(() => port = httpServer.address().port)
 */
 
 
-test((t) => request(app)
+test('plain', (t) => request(app)
   .get('/plain-error')
   .expect(500)
   .expect('Content-Type', /json/)
@@ -46,7 +52,7 @@ test((t) => request(app)
   })
 )
 
-test((t) => request(app)
+test('404', (t) => request(app)
   .get('/404')
   .expect(404)
   .expect('Content-Type', /json/)
@@ -60,7 +66,7 @@ test((t) => request(app)
   })
 )
 
-test((t) => request(app)
+test('expose', (t) => request(app)
   .get('/500-with-expose')
   .expect(500)
   .expect('Content-Type', /json/)
@@ -74,7 +80,7 @@ test((t) => request(app)
   })
 )
 
-test((t) => request(app)
+test('detail', (t) => request(app)
   .get('/402-with-detail')
   .expect(402)
   .expect('Content-Type', /json/)
@@ -91,3 +97,18 @@ test((t) => request(app)
     })
   })
 )
+
+test('after-headers-sent', (t) => {
+  state.logs = []
+  return request(app)
+    .get('/after-headers-sent')
+    .expect(200)
+    .expect('Content-Type', /json/)
+    .then(({ body }) => {
+      t.deepEqual(body, {
+        test: true,
+      })
+      t.equal(state.logs.length, 1)
+      t.equal(state.logs[0].message, 'after headers')
+    })
+})
