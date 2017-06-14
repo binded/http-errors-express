@@ -1,6 +1,6 @@
 # http-errors-express
 
-[![Build Status](https://travis-ci.org/blockai/http-errors-express.svg?branch=master)](https://travis-ci.org/blockai/http-errors-express)
+[![Build Status](https://travis-ci.org/binded/http-errors-express.svg?branch=master)](https://travis-ci.org/binded/http-errors-express)
 
 [Express](http://expressjs.com) middleware for handling errors generated or compatible with the [http-errors](https://github.com/jshttp/http-errors) module. Sends errors to client using JSON, for example:
 
