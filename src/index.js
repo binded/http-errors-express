@@ -1,11 +1,47 @@
 /* eslint-disable no-console */
-const defaultLogError = err => console.error(err)
+export const defaults = {
+  logError: (err, req, isExposed) => {
+    if (isExposed) return
+    console.error(err)
+  },
+  formatError: (err, req, isExposed) => {
+    if (isExposed) {
+      return {
+        error: {
+          name: err.name,
+          message: err.message,
+          detail: err.detail,
+        },
+      }
+    }
+    return {
+      error: {
+        name: err.name,
+      },
+    }
+  },
+}
+
 const noop = () => {}
 
-export default (logError = defaultLogError) => {
-  if (logError && typeof logError !== 'function') {
-    throw new Error('logError must be a function')
+const httpErrors = (opts = {}) => {
+  // for backwards compatibility, httpErrors used to take
+  // a single logError argument which was called only on
+  // unexposed errors
+  if (typeof opts === 'function') {
+    const logError = opts
+    return httpErrors({
+      log: (err, req, isExposed) => {
+        if (isExposed) return
+        return logError(err, req, true)
+      },
+    })
   }
+
+  const {
+    log = defaults.log,
+    formatError = defaults.formatError,
+  } = opts
 
   /* eslint-disable no-unused-vars */
   return (err, req, res, next) => {
@@ -25,23 +61,13 @@ export default (logError = defaultLogError) => {
 
     if (err.expose) {
       // Expected errors...
-      maybeJson({
-        error: {
-          name: err.name,
-          message: err.message,
-          detail: err.detail,
-        },
-      })
+      log(err, req, true)
+      maybeJson(formatError(err, req, true))
     } else {
-      // Unexpected errors
-      if (logError) {
-        logError(err, req)
-      }
-      maybeJson({
-        error: {
-          name: err.name,
-        },
-      })
+      log(err, req, false)
+      maybeJson(formatError(err, req, false))
     }
   }
 }
+
+export default httpErrors

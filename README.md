@@ -46,16 +46,19 @@ npm install --save http-errors-express
 
 ## Usage
 
-**httpErrors([logFn])**
+**httpErrors(opts)**
 
-Returns an Express middleware. `logFn` is an optional parameter which
-will be called with `(err, req)` on unexpected errors (those that don't
-have the `expose` property set to `true`, e.g. >500 errors), defaults to
-`console.error`.
+All options are optional.
 
-If an error has a `detail` property set and is exposed, it will be
+- `opts.log` function with `(err, req, isExposed)` signature that can
+    be used to log errors. Defaults to `console.error` for unexposed errors.
+- `opts.formatError` function with `(err, req, isExposed)` signature which formats errors
+    before passing to `res.json`
+
+Returns an Express middleware.
+
+If an exposed error has a `detail` property, it will by default be
 included as part of the JSON response.
-
 
 ```javascript
 import express from 'express'
