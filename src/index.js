@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
 export const defaults = {
-  logError: (err, req, isExposed) => {
-    if (isExposed) return
+  before: (err, req, isExposed, cb) => {
+    if (isExposed) return cb()
     console.error(err)
+    cb()
   },
   formatError: (err, req, isExposed) => {
     if (isExposed) {
@@ -31,15 +32,16 @@ const httpErrors = (opts = {}) => {
   if (typeof opts === 'function') {
     const logError = opts
     return httpErrors({
-      log: (err, req, isExposed) => {
-        if (isExposed) return
-        return logError(err, req, true)
+      before: (err, req, isExposed, cb) => {
+        if (isExposed) return cb()
+        logError(err, req, true)
+        return cb()
       },
     })
   }
 
   const {
-    log = defaults.log,
+    before = defaults.before,
     formatError = defaults.formatError,
   } = opts
 
@@ -61,11 +63,13 @@ const httpErrors = (opts = {}) => {
 
     if (err.expose) {
       // Expected errors...
-      log(err, req, true)
-      maybeJson(formatError(err, req, true))
+      before(err, req, true, () => {
+        maybeJson(formatError(err, req, true))
+      })
     } else {
-      log(err, req, false)
-      maybeJson(formatError(err, req, false))
+      before(err, req, false, () => {
+        maybeJson(formatError(err, req, false))
+      })
     }
   }
 }

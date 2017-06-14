@@ -50,12 +50,16 @@ npm install --save http-errors-express
 
 All options are optional.
 
-- `opts.log` function with `(err, req, isExposed)` signature that can
-    be used to log errors. Defaults to `console.error` for unexposed errors.
+- `opts.before` function with `(err, req, isExposed, cb)` signature that can
+    be used to log errors for example. Defaults to logging with `console.error`
+    for unexposed errors.
 - `opts.formatError` function with `(err, req, isExposed)` signature which formats errors
     before passing to `res.json`
 
-Returns an Express middleware.
+Returns an Express middleware. The HTTP response is only sent after the
+`before` function's callback is called. This is useful if we want to
+include an error ID received from a remote error logging service (e.g.
+service) as part of the response.
 
 If an exposed error has a `detail` property, it will by default be
 included as part of the JSON response.
