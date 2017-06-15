@@ -25,6 +25,8 @@ export const defaults = {
 
 const noop = () => {}
 
+const isPromise = v => !!(v && typeof v.then === 'function')
+
 const httpErrors = (opts = {}) => {
   // for backwards compatibility, httpErrors used to take
   // a single logError argument which was called only on
@@ -61,15 +63,22 @@ const httpErrors = (opts = {}) => {
       res.set('Cache-Control', null)
     }
 
-    if (err.expose) {
-      // Expected errors...
-      before(err, req, true, () => {
-        maybeJson(formatError(err, req, true))
-      })
-    } else {
-      before(err, req, false, () => {
-        maybeJson(formatError(err, req, false))
-      })
+    const isExposed = err.expose
+
+    let cbWasCalled = false
+    const cb = (beforeErr) => {
+      if (beforeErr) {
+        console.warn('http-errors-express: error in before() function: ')
+        console.warn(err)
+      }
+      if (cbWasCalled) return
+      cbWasCalled = true
+      maybeJson(formatError(err, req, isExposed))
+    }
+
+    const maybePromise = before(err, req, isExposed, cb)
+    if (isPromise(maybePromise)) {
+      maybePromise.then(() => { cb() }, cb)
     }
   }
 }

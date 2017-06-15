@@ -52,7 +52,8 @@ All options are optional.
 
 - `opts.before` function with `(err, req, isExposed, cb)` signature that can
     be used to log errors for example. Defaults to logging with `console.error`
-    for unexposed errors.
+    for unexposed errors. Can ignore the `cb` and instead return a
+    promise.
 - `opts.formatError` function with `(err, req, isExposed)` signature which formats errors
     before passing to `res.json`
 
